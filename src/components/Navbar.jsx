@@ -1,17 +1,21 @@
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
 
-const Navbar = () => {
+export default function Navbar() {
   return (
-    <nav className="bg-pink-200 p-4 flex justify-between">
-      <h1 className="font-bold text-lg">🎈 Balloon</h1>
+    <nav className="bg-pink-500 text-white p-4">
+      <div className="max-w-6xl mx-auto flex justify-between items-center">
+        
+        {/* לוגו */}
+        <h1 className="text-xl font-bold">🎈 Balloon Site</h1>
 
-      <div className="flex gap-4">
-        <Link to="/">בית</Link>
-        <Link to="/products">מוצרים</Link>
-        <Link to="/cart">סל</Link>
+        {/* קישורים */}
+        <div className="flex gap-6">
+          <Link to="/" className="hover:underline">בית</Link>
+          <Link to="/products" className="hover:underline">מוצרים</Link>
+          <Link to="/cart" className="hover:underline">סל</Link>
+        </div>
+
       </div>
     </nav>
-  )
+  );
 }
-
-export default Navbar

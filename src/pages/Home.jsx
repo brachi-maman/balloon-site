@@ -1,11 +1,7 @@
-const Home = () => {
+export default function Home() {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">
-        ברוכים הבאים לעיצובי בלונים 🎈
-      </h1>
+    <div>
+      <h1>ברוכה הבאה לאתר הבלונים 🎈</h1>
     </div>
-  )
+  );
 }
-
-export default Home
