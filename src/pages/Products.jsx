@@ -17,9 +17,7 @@ export default function Products() {
 
     return (
         <div className="p-6">
-<div className="bg-red-500 text-white p-10">
-  בדיקה אם Tailwind עובד
-</div>            <h1 className="text-2xl font-bold mb-6">המוצרים שלנו</h1>
+            <h1 className="text-2xl font-bold mb-6">המוצרים שלנו</h1>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8">
                 {products.map((product) => (
                     <ProductCard key={product.id} product={product} />
