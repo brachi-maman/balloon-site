@@ -8,7 +8,9 @@ function App() {
   return (
     <>
       <Navbar />
-
+<div className="bg-red-500 text-white p-10 text-2xl">
+  אם זה אדום → Tailwind עובד 🎉
+</div>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<Products />} />
