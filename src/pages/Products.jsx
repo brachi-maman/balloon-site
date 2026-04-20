@@ -1,19 +1,25 @@
 import ProductCard from "../components/ProductCard";
+import { useEffect, useState } from "react";
+import { supabase } from "../services/supabase";
 export default function Products() {
-    const products = [
-        {
-            id: 1,
-            name: "קשת בלונים ליום הולדת",
-            price: 250,
-            image: "https://images.unsplash.com/photo-1596464716127-f2a82984de30"
-        },
-        {
-            id: 2,
-            name: "עמדת צילום בלונים",
-            price: 400,
-            image: "https://images.unsplash.com/photo-1607082349566-187342175e2f"
-        }
-    ];
+    const [products, setProducts] = useState([]);
+
+useEffect(() => {
+  const fetchProducts = async () => {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*");
+
+    if (error) {
+      console.log("ERROR:", error);
+    } else {
+      console.log("DATA:", data); // 👈 חשוב לבדיקה
+      setProducts(data);
+    }
+  };
+
+  fetchProducts();
+}, []);
 
     return (
         <div className="p-6">
