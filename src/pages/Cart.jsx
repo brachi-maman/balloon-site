@@ -32,31 +32,44 @@ export default function Cart() {
     (sum, item) => sum + item.price * item.qty, 0);
 
 
-  const sendOrder = async () => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+const sendOrder = async () => {
+  // 👇 מביאים את המשתמש המחובר
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    const total = cart.reduce(
-      (sum, item) => sum + item.price * item.qty,
-      0
-    );
+  // ❌ אם אין משתמש → חוסמים
+  if (!user) {
+    alert("צריך להתחבר לפני ביצוע הזמנה");
+    return;
+  }
 
-    const { error } = await supabase
-      .from("orders")
-      .insert([
-        {
-          items: cart,
-          total: total,
-        },
-      ]);
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-    if (error) {
-      console.log(error);
-    } else {
-      alert("ההזמנה נשלחה בהצלחה 🎉");
-      localStorage.removeItem("cart");
-      setCart([]);
-    }
-  };
+  const total = cart.reduce(
+    (sum, item) => sum + item.price * item.qty,
+    0
+  );
+
+  // 👇 שולחים הזמנה עם user_id
+  const { error } = await supabase
+    .from("orders")
+    .insert([
+      {
+        items: cart,
+        total: total,
+        user_id: user.id, // ⭐ זה החלק החדש
+      },
+    ]);
+
+  if (error) {
+    console.log(error);
+  } else {
+    alert("ההזמנה נשלחה בהצלחה 🎉");
+    localStorage.removeItem("cart");
+    setCart([]);
+  }
+};
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">הסל שלך</h1>

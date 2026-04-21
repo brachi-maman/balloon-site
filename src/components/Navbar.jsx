@@ -13,6 +13,8 @@ export default function Navbar() {
           <Link to="/" className="hover:underline">בית</Link>
           <Link to="/products" className="hover:underline">מוצרים</Link>
           <Link to="/cart" className="hover:underline">סל</Link>
+          <Link to="/my-orders">ההזמנות שלי</Link>
+          <Link to="/register">הרשמה</Link>
         </div>
 
       </div>
