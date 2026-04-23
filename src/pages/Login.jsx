@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { supabase } from "../services/supabase";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -14,7 +16,7 @@ export default function Login() {
     if (error) {
       alert("שגיאה בהתחברות");
     } else {
-      alert("התחברת בהצלחה 🎉");
+      navigate("/");
     }
   };
 
@@ -31,7 +33,6 @@ export default function Login() {
         placeholder="סיסמה"
         onChange={(e) => setPassword(e.target.value)}
       />
-
       <button
         onClick={handleLogin}
         className="bg-pink-500 text-white px-4 py-2 w-full"

@@ -7,18 +7,30 @@ import Login from "./pages/Login";
 import MyOrders from "./pages/MyOrders";
 import ProductPage from "./pages/ProductDetails";
 import Register from "./pages/Register";
+import ProtectedRoute from "./components/ProtectedRoute"; // 👈 חשוב!
+
 function App() {
   return (
     <>
       <Navbar />
+
       <Routes>
-        <Route path="/product/:id" element={<ProductPage />} />
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<Products />} />
+        <Route path="/product/:id" element={<ProductPage />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/my-orders" element={<MyOrders />} />
         <Route path="/register" element={<Register />} />
+
+        {/* 👇 מוגן */}
+        <Route
+          path="/my-orders"
+          element={
+            <ProtectedRoute>
+              <MyOrders />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </>
   );
