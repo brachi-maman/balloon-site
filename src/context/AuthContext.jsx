@@ -5,17 +5,45 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+
+  // 👇 פונקציה שמביאה פרופיל
+  const fetchProfile = async (userId) => {
+    if (!userId) return setProfile(null);
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (error) {
+      console.log("Profile error:", error);
+      setProfile(null);
+    } else {
+      setProfile(data);
+    }
+  };
 
   useEffect(() => {
-    // מביא משתמש קיים
+    // משתמש קיים
     supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
+      const currentUser = data.user;
+      setUser(currentUser);
+      if (currentUser) fetchProfile(currentUser.id);
     });
 
-    // מאזין לשינויים (login/logout)
+    // מאזין לשינויים
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setUser(session?.user || null);
+        const currentUser = session?.user || null;
+        setUser(currentUser);
+
+        if (currentUser) {
+          fetchProfile(currentUser.id);
+        } else {
+          setProfile(null);
+        }
       }
     );
 
@@ -25,7 +53,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user }}>
+    <AuthContext.Provider value={{ user, profile }}>
       {children}
     </AuthContext.Provider>
   );

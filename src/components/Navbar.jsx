@@ -1,66 +1,100 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../services/supabase";
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import logo from "../assets/logo.png";
 import { ShoppingCart } from "lucide-react";
 
 export default function Navbar() {
-  const { user } = useAuth();
-  const [profile, setProfile] = useState(null);
+  const { user, profile } = useAuth();
   const [open, setOpen] = useState(false);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
+  const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
+  // סגירה בלחיצה מחוץ לתפריט
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
-
-      const { data } = await supabase
-        .from("profiles")
-        .select("name")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      setProfile(data);
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpen(false);
+      }
     };
 
-    fetchProfile();
-  }, [user]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+  const testLogout = async () => {
+    console.log("TEST BEFORE");
+
+    const { data, error } = await supabase.auth.signOut();
+
+    console.log("TEST AFTER", { data, error });
+  };
+
+  const handleLogout = async () => {
+    console.log("🔴 Logout clicked");
+
+    try {
+      console.log("🟡 Before signOut");
+
+      const res = await supabase.auth.signOut();
+
+      console.log("🟢 AFTER signOut:", res);
+
+    } catch (err) {
+      console.log("💥 ERROR:", err);
+    }
+  };
 
   return (
-
     <nav className="bg-green-300 shadow-md">
       <div className="max-w-6xl mx-auto px-6 py-4 flex flex-row-reverse items-center justify-between">
-        {/* לוגו - ימין */}
-        <img src={logo} className="h-24 object-contain" />
 
-        {/* קישורים - אמצע */}
+        {/* צד ימין - לוגו */}
+        <img src={logo} alt="logo" className="h-20 object-contain" />
+
+        {/* אמצע - ניווט */}
         <div className="hidden md:flex gap-8 text-gray-700 font-medium">
-          <Link to="/" className="hover:text-pink-500 transition">בית</Link>
-          <Link to="/products" className="hover:text-pink-500 transition">מוצרים</Link>
+          <Link to="/" className="hover:text-pink-500">בית</Link>
+          <Link to="/products" className="hover:text-pink-500">מוצרים</Link>
+
+          {/* אדמין */}
+          {profile?.is_admin && (
+            <>
+              <Link to="/admin" className="text-yellow-600 font-bold">
+                ניהול
+              </Link>
+              <Link to="/admin/orders" className="text-yellow-600">
+                הזמנות
+              </Link>
+            </>
+          )}
         </div>
 
-        {/* משתמש - שמאל */}
-        <div className="relative flex items-center gap-4">
+        {/* צד שמאל */}
+        <div className="flex items-center gap-4">
 
-          {/* סל - הכי בצד */}
-          <Link to="/cart" className="hover:text-pink-500 transition flex items-center gap-1 ml-auto">
-            <ShoppingCart size={20} />
+          {/* סל */}
+          <Link to="/cart" className="hover:text-pink-500 flex items-center">
+            <ShoppingCart size={22} />
           </Link>
-          {user ? (
-            <>
-              <button
-                onClick={() => setOpen(!open)}>
-                <div className="w-10 h-10 bg-pink-500 text-white flex items-center justify-center rounded-full text-sm">
-                  {profile?.name?.[0] || "User"}
-                </div>
-              </button>
 
+          {/* משתמש */}
+          {user ? (
+            <div ref={dropdownRef} className="relative">
+
+              {/* עיגול משתמש */}
+              <div
+                onClick={() => setOpen(!open)}
+                className="w-10 h-10 bg-pink-500 text-white flex items-center justify-center rounded-full cursor-pointer font-bold"
+              >
+                {profile?.name?.[0] || user.email?.[0] || "U"}
+              </div>
+
+              {/* dropdown */}
               {open && (
-                <div className="absolute left-0 mt-2 w-44 bg-white shadow-lg rounded-xl overflow-hidden">
+                <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-xl overflow-hidden border z-50">
+
                   <Link
                     to="/my-orders"
                     className="block px-4 py-2 hover:bg-gray-100"
@@ -70,26 +104,33 @@ export default function Navbar() {
                   </Link>
 
                   <button
-                    onClick={handleLogout}
-                    className="w-full text-right px-4 py-2 hover:bg-gray-100"
+                    onClick={testLogout}
+                     className="w-full text-right px-4 py-2 hover:bg-gray-100 text-red-500"
                   >
                     התנתק
                   </button>
+
                 </div>
               )}
-            </>
+            </div>
           ) : (
             <div className="flex gap-3">
-              <Link to="/login" className="px-4 py-2 border rounded-lg hover:bg-gray-100">
+              <Link
+                to="/login"
+                className="px-4 py-2 border rounded-lg hover:bg-gray-100"
+              >
                 התחבר
               </Link>
-              <Link to="/register" className="px-4 py-2 bg-pink-400 text-white rounded-lg hover:bg-pink-500">
+              <Link
+                to="/register"
+                className="px-4 py-2 bg-pink-400 text-white rounded-lg hover:bg-pink-500"
+              >
                 הרשמה
               </Link>
             </div>
           )}
-        </div>
 
+        </div>
       </div>
     </nav>
   );

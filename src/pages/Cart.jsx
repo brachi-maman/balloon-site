@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabase";
-
+import { ShoppingBag } from "lucide-react";
 export default function Cart() {
   const [cart, setCart] = useState([]);
 
@@ -32,95 +32,142 @@ export default function Cart() {
     (sum, item) => sum + item.price * item.qty, 0);
 
 
-const sendOrder = async () => {
-  // 👇 מביאים את המשתמש המחובר
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sendOrder = async () => {
+    // 👇 מביאים את המשתמש המחובר
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  // ❌ אם אין משתמש → חוסמים
-  if (!user) {
-    alert("צריך להתחבר לפני ביצוע הזמנה");
-    return;
-  }
+    // ❌ אם אין משתמש → חוסמים
+    if (!user) {
+      alert("צריך להתחבר לפני ביצוע הזמנה");
+      return;
+    }
 
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-  const total = cart.reduce(
-    (sum, item) => sum + item.price * item.qty,
-    0
-  );
+    const total = cart.reduce(
+      (sum, item) => sum + item.price * item.qty,
+      0
+    );
 
-  // 👇 שולחים הזמנה עם user_id
-  const { error } = await supabase
-    .from("orders")
-    .insert([
-      {
-        items: cart,
-        total: total,
-        user_id: user.id, // ⭐ זה החלק החדש
-      },
-    ]);
+    // 👇 שולחים הזמנה עם user_id
+    const { error } = await supabase
+      .from("orders")
+      .insert([
+        {
+          items: cart,
+          total: total,
+          user_id: user.id, // ⭐ זה החלק החדש
+        },
+      ]);
 
-  if (error) {
-    console.log(error);
-  } else {
-    alert("ההזמנה נשלחה בהצלחה 🎉");
-    localStorage.removeItem("cart");
-    setCart([]);
-  }
-};
+    if (error) {
+      console.log(error);
+    } else {
+      alert("ההזמנה נשלחה בהצלחה 🎉");
+      localStorage.removeItem("cart");
+      setCart([]);
+    }
+  };
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">הסל שלך</h1>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-white p-6">
+      <h1 className="text-3xl font-bold mb-8 text-gray-800 text-center">
+        מוצרים שהוזמנו
+      </h1>
 
-      {cart.map((item, i) => (
-        <div key={i} className="border p-4 mb-3 rounded-xl flex justify-between items-center">
+      <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
 
-          <div>
-            <h2 className="font-bold">{item.name}</h2>
-            <p>{item.price} ₪</p>
+        {/* 🧾 רשימת מוצרים */}
+        <div className="md:col-span-2 space-y-4">
+          {cart.length === 0 && (
+            <p className="text-center text-gray-500">הסל ריק</p>
+          )}
 
-            <div className="flex gap-2 items-center mt-2">
-              <button
-                onClick={() => updateQty(item.id, -1)}
-                className="px-2 bg-gray-200 rounded"
-              >
-                -
-              </button>
+          {cart.map((item, i) => (
+            <div
+              key={i}
+              className="bg-white/80 backdrop-blur-lg border border-gray-200 p-5 rounded-2xl flex justify-between items-center shadow-sm hover:shadow-lg transition"
+            >
+              <div className="flex gap-2 mt-2">
+                {item.colors?.map((color, index) => (
+                  <div
+                    key={index}
+                    className="w-6 h-6 rounded-full border"
+                    style={{ backgroundColor: color }}
+                  ></div>
+                ))}
+              </div>
+              {/* פרטים */}
+              <div>
+                <h2 className="font-bold text-lg text-gray-800">
+                  {item.name}
+                </h2>
+                <p className="text-gray-500">{item.price} ₪</p>
 
-              <span>{item.qty}</span>
+                {/* כמות */}
+                <div className="flex items-center gap-3 mt-3">
+                  <button
+                    onClick={() => updateQty(item.id, -1)}
+                    className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300"
+                  >
+                    -
+                  </button>
 
-              <button
-                onClick={() => updateQty(item.id, 1)}
-                className="px-2 bg-gray-200 rounded"
-              >
-                +
-              </button>
+                  <span className="font-semibold">{item.qty}</span>
+
+                  <button
+                    onClick={() => updateQty(item.id, 1)}
+                    className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* צד ימין */}
+              <div className="flex flex-col items-end gap-3">
+                <p className="font-bold text-gray-800">
+                  {item.price * item.qty} ₪
+                </p>
+
+                <button
+                  onClick={() => removeItem(item.id)}
+                  className="text-red-500 hover:text-red-600 text-sm"
+                >
+                  הסר ✕
+                </button>
+              </div>
             </div>
+          ))}
+        </div>
+
+        {/* 💳 סיכום הזמנה */}
+        <div className="bg-white p-6 rounded-2xl shadow-lg h-fit sticky top-6">
+          <h2 className="text-xl font-bold mb-4 text-gray-800">
+            סיכום הזמנה
+          </h2>
+
+          <div className="flex justify-between text-gray-600 mb-2">
+            <span>סה״כ מוצרים</span>
+            <span>{cart.length}</span>
           </div>
 
+          <div className="flex justify-between text-gray-600 mb-4">
+            <span>סה״כ לתשלום</span>
+            <span className="font-bold text-lg text-gray-800">
+              ₪  {total}
+            </span>
+          </div>
           <button
-            onClick={() => removeItem(item.id)}
-            className="text-red-500"
+            onClick={sendOrder}
+            className="w-full bg-gradient-to-r from-green-400 to-green-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:scale-105 transition"
           >
-            מחק
+            <ShoppingBag size={20} />
+            <span>בצע הזמנה</span>
           </button>
-
         </div>
-      ))}
-
-      <h2 className="text-xl font-bold mt-6">
-        סה״כ: {total} ₪
-      </h2>
-      <button
-        onClick={sendOrder}
-        className="bg-green-500 text-white px-4 py-2 rounded mt-4"
-      >
-        בצע הזמנה
-      </button>
+      </div>
     </div>
-
   );
-
 }

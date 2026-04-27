@@ -7,8 +7,10 @@ import Login from "./pages/Login";
 import MyOrders from "./pages/MyOrders";
 import ProductPage from "./pages/ProductDetails";
 import Register from "./pages/Register";
-import ProtectedRoute from "./components/ProtectedRoute"; // 👈 חשוב!
-
+import ProtectedRoute from "./components/ProtectedRoute";
+import Admin from "./pages/Admin";
+import AdminOrders from "./pages/AdminOrders";
+import AdminRoute from "./components/AdminRoute";
 function App() {
   return (
     <>
@@ -21,14 +23,21 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
-        {/* 👇 מוגן */}
+        <Route path="/admin" element={<Admin />} />
         <Route
           path="/my-orders"
           element={
             <ProtectedRoute>
               <MyOrders />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/orders"
+          element={
+            <AdminRoute>
+              <AdminOrders />
+            </AdminRoute>
           }
         />
       </Routes>

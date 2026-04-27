@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast, { Toaster } from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 // ✅ סכימת ולידציה
 const schema = z.object({
@@ -13,10 +14,9 @@ const schema = z.object({
   address: z.string().min(3, "כתובת קצרה מדי"),
   password: z.string().min(6, "סיסמה לפחות 6 תווים"),
 });
-
 export default function Register() {
   const [loading, setLoading] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -137,13 +137,22 @@ export default function Register() {
         </div>
 
         {/* סיסמה */}
-        <div>
+        <div className="relative">
           <input
-            type="password"
-            {...register("password")}
+            type={showPassword ? "text" : "password"}
             placeholder="סיסמה"
-            className="border p-2 w-full"
+            {...register("password")}
+            className="border p-2 w-full pr-10"
           />
+
+          {/* כפתור עין */}
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-pink-500 transition"          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+
           {errors.password && (
             <p className="text-red-500 text-sm">{errors.password.message}</p>
           )}
