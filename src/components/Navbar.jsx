@@ -60,14 +60,21 @@ export default function Navbar() {
 
           {/* אדמין */}
           {profile?.is_admin && (
-            <>
-              <Link to="/admin" className="text-yellow-600 font-bold">
-                ניהול
+            <div className="flex gap-4 items-center">
+
+              <Link to="/admin" className="text-yellow-300 font-bold hover:underline">
+                ניהול מוצרים
               </Link>
-              <Link to="/admin/orders" className="text-yellow-600">
+
+              <Link to="/admin/orders" className="text-yellow-300 hover:underline">
                 הזמנות
               </Link>
-            </>
+
+              <Link to="/admin/users" className="text-yellow-300 hover:underline">
+                משתמשים
+              </Link>
+
+            </div>
           )}
         </div>
 
@@ -97,7 +104,7 @@ export default function Navbar() {
 
                   <Link
                     to="/my-orders"
-                    className="block px-4 py-2 hover:bg-gray-100"
+                    className="block text-right px-4 py-2 hover:bg-gray-100"
                     onClick={() => setOpen(false)}
                   >
                     ההזמנות שלי
@@ -105,7 +112,7 @@ export default function Navbar() {
 
                   <button
                     onClick={testLogout}
-                     className="w-full text-right px-4 py-2 hover:bg-gray-100 text-red-500"
+                    className="w-full text-right px-4 py-2 hover:bg-gray-100 text-red-500"
                   >
                     התנתק
                   </button>

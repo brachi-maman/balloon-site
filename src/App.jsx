@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Admin from "./pages/Admin";
 import AdminOrders from "./pages/AdminOrders";
 import AdminRoute from "./components/AdminRoute";
+import AdminUsers from "./pages/AdminUsers";
 function App() {
   return (
     <>
@@ -24,6 +25,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
         <Route
           path="/my-orders"
           element={
