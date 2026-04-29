@@ -248,20 +248,6 @@ export default function Admin() {
           )}
         </div>
       ))}
-
-      {/* 👤 משתמשים */}
-      <div className="border p-4 rounded">
-        <h2 className="text-xl font-bold mb-4">משתמשים</h2>
-
-        {users.map((u) => (
-          <div key={u.id} className="border-b py-2">
-            <p>{u.name}</p>
-            <p className="text-gray-600">{u.phone}</p>
-            <p className="text-gray-600">{u.address}</p>
-          </div>
-        ))}
-      </div>
-
     </div>
   );
 }
