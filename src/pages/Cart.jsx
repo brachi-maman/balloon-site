@@ -33,12 +33,10 @@ export default function Cart() {
 
 
   const sendOrder = async () => {
-    // 👇 מביאים את המשתמש המחובר
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    // ❌ אם אין משתמש → חוסמים
     if (!user) {
       alert("צריך להתחבר לפני ביצוע הזמנה");
       return;
@@ -51,24 +49,42 @@ export default function Cart() {
       0
     );
 
-    // 👇 שולחים הזמנה עם user_id
-    const { error } = await supabase
-      .from("orders")
-      .insert([
-        {
-          items: cart,
-          total: total,
-          user_id: user.id, // ⭐ זה החלק החדש
-        },
-      ]);
+    // 👤 מביא פרופיל כדי לקבל שם/טלפון/כתובת
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    const { error } = await supabase.from("orders").insert([
+      {
+        user_id: user.id,
+        items: cart,
+        total,
+
+        // 🧾 פרטי לקוח
+        customer_name: profile?.name,
+        phone: profile?.phone,
+        address: profile?.address,
+
+        // 🎨 צבעים מכל המוצרים
+        design_colors: cart.flatMap((item) => item.colors || []),
+
+        // 📦 סטטוס התחלתי
+        status: "new",
+      },
+    ]);
 
     if (error) {
       console.log(error);
-    } else {
-      alert("ההזמנה נשלחה בהצלחה 🎉");
-      localStorage.removeItem("cart");
-      setCart([]);
+      alert("שגיאה ביצירת הזמנה");
+      return;
     }
+
+    alert("ההזמנה נשלחה בהצלחה 🎉");
+
+    localStorage.removeItem("cart");
+    setCart([]);
   };
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-white p-6">

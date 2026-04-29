@@ -86,9 +86,9 @@ export default function Navbar() {
               {/* עיגול משתמש */}
               <div
                 onClick={() => setOpen(!open)}
-                className="w-10 h-10 bg-pink-500 text-white flex items-center justify-center rounded-full cursor-pointer font-bold"
+                className="w-20 h-20 bg-pink-500 text-white flex items-center justify-center rounded-full cursor-pointer font-bold"
               >
-                {profile?.name?.[0] || user.email?.[0] || "U"}
+                {profile?.name ? <div className="name">{profile.name}</div> : <div className="email">{user.email}</div> || "U"}
               </div>
 
               {/* dropdown */}

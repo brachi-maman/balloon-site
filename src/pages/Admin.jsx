@@ -1,19 +1,32 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabase";
+import {
+  Trash2,
+  Pencil,
+  Save,
+  X,
+  Plus,
+  ImagePlus,
+} from "lucide-react";
 
 export default function Admin() {
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    price: "",
+    imageFile: null,
+  });
+
+  const [editingProduct, setEditingProduct] = useState(null);
+
   const [products, setProducts] = useState([]);
-  const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
 
-  // 🔄 טעינת נתונים
+  // 🔄 טעינה
   const fetchData = async () => {
     const { data: productsData } = await supabase.from("products").select("*");
-    const { data: ordersData } = await supabase.from("orders").select("*");
     const { data: usersData } = await supabase.from("profiles").select("*");
 
     setProducts(productsData || []);
-    setOrders(ordersData || []);
     setUsers(usersData || []);
   };
 
@@ -21,18 +34,43 @@ export default function Admin() {
     fetchData();
   }, []);
 
+  // 🖼 העלאת תמונה
+  const uploadImage = async (file) => {
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+
+    const { error } = await supabase.storage
+      .from("products")
+      .upload(fileName, file);
+
+    if (error) {
+      console.log(error);
+      return null;
+    }
+
+    const { data } = supabase.storage
+      .from("products")
+      .getPublicUrl(fileName);
+
+    return data.publicUrl;
+  };
+
   // ➕ הוספת מוצר
   const addProduct = async () => {
-    const name = prompt("שם מוצר:");
-    const price = prompt("מחיר:");
-    const image = prompt("URL תמונה:");
+    if (!newProduct.name || !newProduct.price || !newProduct.imageFile) return;
 
-    if (!name || !price) return;
+    const imageUrl = await uploadImage(newProduct.imageFile);
+    if (!imageUrl) return;
 
     await supabase.from("products").insert([
-      { name, price: Number(price), image },
+      {
+        name: newProduct.name,
+        price: Number(newProduct.price),
+        image: imageUrl,
+      },
     ]);
 
+    setNewProduct({ name: "", price: "", imageFile: null });
     fetchData();
   };
 
@@ -42,74 +80,184 @@ export default function Admin() {
     fetchData();
   };
 
-  // ✏️ עדכון
-  const updateProduct = async (id) => {
-    const price = prompt("מחיר חדש:");
+  // ✏️ שמירה
+  const saveEdit = async () => {
+    let imageUrl = editingProduct.image;
 
-    if (!price) return;
+    if (editingProduct.imageFile) {
+      const uploaded = await uploadImage(editingProduct.imageFile);
+      if (uploaded) imageUrl = uploaded;
+    }
 
     await supabase
       .from("products")
-      .update({ price: Number(price) })
-      .eq("id", id);
+      .update({
+        name: editingProduct.name,
+        price: Number(editingProduct.price),
+        image: imageUrl,
+      })
+      .eq("id", editingProduct.id);
 
+    setEditingProduct(null);
     fetchData();
   };
 
   return (
-    <div className="p-10 space-y-10">
+    <div className="p-10 space-y-10" dir="rtl">
 
-      {/* 🟣 מוצרים */}
-      <div>
-        <h1 className="text-2xl font-bold mb-4">ניהול מוצרים</h1>
+      {/* 🟣 הוספת מוצר */}
+      <div className="border p-4 rounded space-y-3">
+        <h1 className="text-2xl font-bold">ניהול מוצרים</h1>
+
+        <input
+          type="text"
+          placeholder="שם מוצר"
+          value={newProduct.name}
+          onChange={(e) =>
+            setNewProduct({ ...newProduct, name: e.target.value })
+          }
+          className="border p-2 w-full"
+        />
+
+        <input
+          type="number"
+          placeholder="מחיר"
+          value={newProduct.price}
+          onChange={(e) =>
+            setNewProduct({ ...newProduct, price: e.target.value })
+          }
+          className="border p-2 w-full"
+        />
+
+        <input
+          type="file"
+          onChange={(e) =>
+            setNewProduct({
+              ...newProduct,
+              imageFile: e.target.files[0],
+            })
+          }
+          className="border p-2 w-full"
+        />
 
         <button
           onClick={addProduct}
-          className="bg-green-500 text-white px-4 py-2 rounded mb-4"
+          className="bg-green-500 text-white px-4 py-2 rounded flex items-center gap-2"
         >
+          <Plus size={18} />
           הוסף מוצר
         </button>
-
-        {products.map((p) => (
-          <div key={p.id} className="border p-4 mb-2 flex justify-between">
-            <div>
-              {p.name} - ₪{p.price}
-            </div>
-
-            <div className="flex gap-2">
-              <button onClick={() => updateProduct(p.id)}>✏️</button>
-              <button onClick={() => deleteProduct(p.id)}>❌</button>
-            </div>
-          </div>
-        ))}
       </div>
 
-      {/* 🟡 הזמנות */}
-      <div>
-        <h1 className="text-2xl font-bold mb-4">הזמנות</h1>
+      {/* 📦 מוצרים */}
+      {products.map((p) => (
+        <div key={p.id} className="border p-4 rounded space-y-3">
 
-        {orders.map((o) => (
-          <div key={o.id} className="border p-4 mb-2">
-            <p>סה"כ: ₪{o.total}</p>
+          <div className="flex justify-between items-center">
 
-            {o.items?.map((item, i) => (
-              <div key={i}>
-                {item.name} - {item.qty}
+            <div className="flex items-center gap-4">
+
+              <img
+                src={p.image}
+                className="w-20 h-20 object-cover rounded"
+              />
+
+              <div className="text-right">
+                <p className="font-bold">{p.name}</p>
+                <p className="text-gray-600">₪{p.price}</p>
               </div>
-            ))}
-          </div>
-        ))}
-      </div>
 
-      {/* 🔵 משתמשים */}
-      <div>
-        <h1 className="text-2xl font-bold mb-4">משתמשים</h1>
+            </div>
+
+            <div className="flex gap-3">
+
+              <button
+                onClick={() => setEditingProduct(p)}
+                className="text-blue-500"
+              >
+                <Pencil />
+              </button>
+
+              <button
+                onClick={() => deleteProduct(p.id)}
+                className="text-red-500"
+              >
+                <Trash2 />
+              </button>
+
+            </div>
+          </div>
+
+          {/* ✏️ עריכה */}
+          {editingProduct?.id === p.id && (
+            <div className="border-t pt-4 space-y-3">
+
+              <input
+                value={editingProduct.name}
+                onChange={(e) =>
+                  setEditingProduct({
+                    ...editingProduct,
+                    name: e.target.value,
+                  })
+                }
+                className="border p-2 w-full"
+              />
+
+              <input
+                value={editingProduct.price}
+                onChange={(e) =>
+                  setEditingProduct({
+                    ...editingProduct,
+                    price: e.target.value,
+                  })
+                }
+                className="border p-2 w-full"
+              />
+
+              <input
+                type="file"
+                onChange={(e) =>
+                  setEditingProduct({
+                    ...editingProduct,
+                    imageFile: e.target.files[0],
+                  })
+                }
+                className="border p-2 w-full"
+              />
+
+              <div className="flex gap-2">
+
+                <button
+                  onClick={saveEdit}
+                  className="bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-2"
+                >
+                  <Save size={18} />
+                  שמור
+                </button>
+
+                <button
+                  onClick={() => setEditingProduct(null)}
+                  className="bg-gray-400 text-white px-4 py-2 rounded flex items-center gap-2"
+                >
+                  <X size={18} />
+                  ביטול
+                </button>
+
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* 👤 משתמשים */}
+      <div className="border p-4 rounded">
+        <h2 className="text-xl font-bold mb-4">משתמשים</h2>
 
         {users.map((u) => (
-          <div key={u.id} className="border p-4 mb-2">
+          <div key={u.id} className="border-b py-2">
             <p>{u.name}</p>
-            <p>{u.phone}</p>
-            <p>{u.address}</p>
+            <p className="text-gray-600">{u.phone}</p>
+            <p className="text-gray-600">{u.address}</p>
           </div>
         ))}
       </div>

@@ -1,45 +1,51 @@
 import { useParams } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "../services/supabase";
+
 export default function ProductDetails() {
   const { id } = useParams();
+  const [product, setProduct] = useState(null);
   const [selectedColors, setSelectedColors] = useState([]);
-  const [currentColor, setCurrentColor] = useState("#ff0000"); const products = [
-    {
-      id: 1,
-      name: "קשת בלונים ליום הולדת",
-      price: 250,
-      image: "https://images.unsplash.com/photo-1596464716127-f2a82984de30"
-    },
-    {
-      id: 2,
-      name: "עמדת צילום בלונים",
-      price: 400,
-      image: "https://images.unsplash.com/photo-1607082349566-187342175e2f"
-    }
-  ];
+  const [currentColor, setCurrentColor] = useState("#ff0000");
 
-  const product = products.find((p) => p.id === Number(id));
+  useEffect(() => {
+    const fetchProduct = async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) {
+        console.log(error);
+      } else {
+        setProduct(data);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
 
   if (!product) {
-    return <div className="p-10">מוצר לא נמצא ❌</div>;
+    return <div className="p-10">טוען מוצר...</div>;
+  }
+  const addToCart = () => {
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+  const existing = cart.find(item => item.id === product.id);
+
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({
+      ...product,
+      qty: 1,
+      colors: selectedColors,
+    });
   }
 
-  const addToCart = () => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-    const existing = cart.find(item => item.id === product.id);
-
-    if (existing) {
-      existing.qty += 1;
-    } else {
-      cart.push({
-        ...product, qty: 1,
-        colors: selectedColors,
-      });
-    }
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-  };
+  localStorage.setItem("cart", JSON.stringify(cart));
+};
 
   return (
     <div className="p-10 max-w-4xl mx-auto">

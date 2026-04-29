@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+
 export default function ProductCard({ product }) {
   const navigate = useNavigate();
 
@@ -7,19 +8,16 @@ export default function ProductCard({ product }) {
       onClick={() => navigate(`/product/${product.id}`)}
       className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer"
     >
-
       {/* תמונה */}
       <div className="relative group h-48 w-full overflow-hidden rounded-t-2xl">
-
         <img
           src={product.image}
           alt={product.name}
           className="w-full h-full object-cover transition duration-300 group-hover:scale-110"
         />
 
-        {/* שכבת hover שחורה */}
+        {/* שכבת hover */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition duration-300"></div>
-
       </div>
 
       {/* תוכן */}
@@ -31,7 +29,6 @@ export default function ProductCard({ product }) {
           לפרטים
         </button>
       </div>
-
     </div>
   );
 }
